@@ -17,12 +17,13 @@ public class Publication {
     private int rating;
     private Integer commentsCount;
     private String tag;
+    private String login;
 
     public Publication() {
         this.commentsCount = 0;
     }
 
-    public Publication(String name, String tag, String location, String time, String placeName, String description, int rating, Integer commentsCount) {
+    public Publication(String name, String tag, String location, String time, String placeName, String description, int rating, Integer commentsCount, String login) {
         this.name = name;
         this.location = location;
         this.time = time;
@@ -31,6 +32,7 @@ public class Publication {
         this.rating = rating;
         this.commentsCount = commentsCount != null ? commentsCount : 0;
         this.tag = tag;
+        this.login = login;
     }
 
     public String getTag() {
@@ -101,6 +103,14 @@ public class Publication {
         this.commentsCount = commentsCount;
     }
 
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -113,6 +123,7 @@ public class Publication {
                 ", rating=" + rating + '\'' +
                 ", commentsCount=" + commentsCount + '\'' +
                 ", tag=" + tag + '\'' +
+                ", login=" + login + '\'' +
                 '}';
     }
 
