@@ -30,11 +30,11 @@ public class PublicationService {
         Publication post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
         post.setName(postDetails.getName());
+        post.setPlaceName(postDetails.getPlaceName());
         return postRepository.save(post);
     }
 
     public void deletePost(Long id) {
         postRepository.deleteById(id);
     }
-
 }

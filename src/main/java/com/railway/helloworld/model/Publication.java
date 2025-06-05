@@ -3,12 +3,12 @@ package com.railway.helloworld.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "publications")
+@Table(name = "Publications")
 public class Publication {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
     private String name;
     private String location;
     private String time;
@@ -19,8 +19,7 @@ public class Publication {
 
     public Publication() {}
 
-    public Publication(long id, String name, String location, String time, String placeName, String description, int rating, int commentsCount) {
-        this.id = id;
+    public Publication(String name, String location, String time, String placeName, String description, int rating, int commentsCount) {
         this.name = name;
         this.location = location;
         this.time = time;
@@ -32,10 +31,6 @@ public class Publication {
 
     public long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getName() {
