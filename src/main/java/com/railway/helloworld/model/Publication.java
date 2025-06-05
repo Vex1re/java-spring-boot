@@ -18,16 +18,18 @@ public class Publication {
     private Integer commentsCount;
     private String tag;
 
-    public Publication() {}
+    public Publication() {
+        this.commentsCount = 0;
+    }
 
-    public Publication(String name,String tag, String location, String time, String placeName, String description, int rating, int commentsCount) {
+    public Publication(String name, String tag, String location, String time, String placeName, String description, int rating, Integer commentsCount) {
         this.name = name;
         this.location = location;
         this.time = time;
         this.placeName = placeName;
         this.description = description;
         this.rating = rating;
-        this.commentsCount = commentsCount;
+        this.commentsCount = commentsCount != null ? commentsCount : 0;
         this.tag = tag;
     }
 

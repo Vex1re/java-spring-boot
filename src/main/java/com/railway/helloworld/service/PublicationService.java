@@ -23,6 +23,9 @@ public class PublicationService {
     }
 
     public Publication createPost(Publication post) {
+        if (post.getCommentsCount() == null) {
+            post.setCommentsCount(0);
+        }
         return postRepository.save(post);
     }
 
