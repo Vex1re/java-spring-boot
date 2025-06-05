@@ -1,4 +1,4 @@
-package com.railwayguide.helloworld;
+package com.railway.helloworld;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,7 +15,7 @@ public class HelloworldApplication {
 
 	@GetMapping("/")
     public String hello() {
-      return String.format("Hello world from Java Spring Boot!");
+      return String.format("Hello world");
     }
 
 }
