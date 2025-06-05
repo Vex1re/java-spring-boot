@@ -15,7 +15,7 @@ public class Publication {
     private String placeName;
     private String description;
     private int rating;
-    private int commentsCount;
+    private Integer commentsCount;
     private String tag;
 
     public Publication() {}
@@ -91,11 +91,11 @@ public class Publication {
         this.rating = rating;
     }
 
-    public int getCommentsCount() {
+    public Integer getCommentsCount() {
         return commentsCount;
     }
 
-    public void setCommentsCount(int commentsCount) {
+    public void setCommentsCount(Integer commentsCount) {
         this.commentsCount = commentsCount;
     }
 
