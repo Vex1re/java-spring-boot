@@ -16,10 +16,11 @@ public class Publication {
     private String description;
     private int rating;
     private int commentsCount;
+    private String tag;
 
     public Publication() {}
 
-    public Publication(String name, String location, String time, String placeName, String description, int rating, int commentsCount) {
+    public Publication(String name,String tag, String location, String time, String placeName, String description, int rating, int commentsCount) {
         this.name = name;
         this.location = location;
         this.time = time;
@@ -27,6 +28,15 @@ public class Publication {
         this.description = description;
         this.rating = rating;
         this.commentsCount = commentsCount;
+        this.tag = tag;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     public long getId() {
@@ -100,6 +110,7 @@ public class Publication {
                 ", description=" + description + '\'' +
                 ", rating=" + rating + '\'' +
                 ", commentsCount=" + commentsCount + '\'' +
+                ", tag=" + tag + '\'' +
                 '}';
     }
 
