@@ -9,19 +9,15 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/posts")
 public class PublicationController {
     private static final Logger logger = LoggerFactory.getLogger(PublicationController.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private PublicationService publicationService;
@@ -75,17 +71,7 @@ public class PublicationController {
             String fileName = fileStorageService.storeFile(file);
             String imageUrl = "/api/files/" + fileName;
             
-            Publication post = publicationService.getPostById(id)
-                    .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
-
-            List<String> images = new ArrayList<>();
-            if (post.getImages() != null && !post.getImages().isEmpty()) {
-                images = objectMapper.readValue(post.getImages(), new TypeReference<List<String>>() {});
-            }
-            images.add(imageUrl);
-            post.setImages(objectMapper.writeValueAsString(images));
-            
-            Publication updatedPost = publicationService.updatePost(id, post);
+            Publication updatedPost = publicationService.addImageToPost(id, imageUrl);
             return ResponseEntity.ok(updatedPost);
         } catch (Exception e) {
             logger.error("Error uploading image: ", e);
@@ -96,22 +82,8 @@ public class PublicationController {
     @DeleteMapping("/{id}/images")
     public ResponseEntity<?> removeImage(@PathVariable Long id, @RequestParam String imageUrl) {
         try {
-            Publication post = publicationService.getPostById(id)
-                    .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
-
-            if (post.getImages() != null && !post.getImages().isEmpty()) {
-                List<String> images = objectMapper.readValue(post.getImages(), new TypeReference<List<String>>() {});
-                images.remove(imageUrl);
-                post.setImages(objectMapper.writeValueAsString(images));
-                
-                // Удаляем файл с сервера
-                String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-                fileStorageService.deleteFile(fileName);
-                
-                Publication updatedPost = publicationService.updatePost(id, post);
-                return ResponseEntity.ok(updatedPost);
-            }
-            return ResponseEntity.ok(post);
+            Publication updatedPost = publicationService.removeImageFromPost(id, imageUrl);
+            return ResponseEntity.ok(updatedPost);
         } catch (Exception e) {
             logger.error("Error removing image: ", e);
             return ResponseEntity.internalServerError().body("Error removing image: " + e.getMessage());
