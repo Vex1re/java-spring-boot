@@ -37,7 +37,7 @@ public class PublicationController {
         return publicationService.getAllPosts();
     }
 
-    @PostMapping
+    @PostMapping("/all")
     public ResponseEntity<?> createPost(@RequestBody Publication post) {
         try {
             logger.info("Creating new post: {}", post);
