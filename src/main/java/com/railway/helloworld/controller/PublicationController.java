@@ -7,8 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.demo.service.FileStorageService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/posts")
@@ -17,6 +21,9 @@ public class PublicationController {
 
     @Autowired
     private PublicationService publicationService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @GetMapping("/{id}")
     public ResponseEntity<Publication> getPostById(@PathVariable long id) {
@@ -58,4 +65,28 @@ public class PublicationController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/images")
+    public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            String fileName = fileStorageService.storeFile(file);
+            String imageUrl = "/api/files/" + fileName;
+            
+            Publication updatedPost = publicationService.addImageToPost(id, imageUrl);
+            return ResponseEntity.ok(updatedPost);
+        } catch (Exception e) {
+            logger.error("Error uploading image: ", e);
+            return ResponseEntity.internalServerError().body("Error uploading image: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}/images")
+    public ResponseEntity<?> removeImage(@PathVariable Long id, @RequestParam String imageUrl) {
+        try {
+            Publication updatedPost = publicationService.removeImageFromPost(id, imageUrl);
+            return ResponseEntity.ok(updatedPost);
+        } catch (Exception e) {
+            logger.error("Error removing image: ", e);
+            return ResponseEntity.internalServerError().body("Error removing image: " + e.getMessage());
+        }
+    }
 }

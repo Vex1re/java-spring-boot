@@ -1,6 +1,7 @@
 package com.railway.helloworld.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "Publications")
@@ -18,6 +19,9 @@ public class Publication {
     private Integer commentsCount;
     private String tag;
     private String login;
+
+    @Column(columnDefinition = "jsonb")
+    private String images;
 
     public Publication() {
         this.commentsCount = 0;
@@ -111,6 +115,14 @@ public class Publication {
         this.login = login;
     }
 
+    public String getImages() {
+        return images;
+    }
+
+    public void setImages(String images) {
+        this.images = images;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -124,6 +136,7 @@ public class Publication {
                 ", commentsCount=" + commentsCount + '\'' +
                 ", tag=" + tag + '\'' +
                 ", login=" + login + '\'' +
+                ", images=" + images + '\'' +
                 '}';
     }
 
