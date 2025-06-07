@@ -60,6 +60,26 @@ public class PublicationController {
         }
     }
 
+    @PutMapping("/{id}/rating")
+    public ResponseEntity<?> updateRating(@PathVariable Long id, @RequestBody Map<String, Integer> ratingData) {
+        try {
+            Integer newRating = ratingData.get("rating");
+            if (newRating == null) {
+                return ResponseEntity.badRequest().body("Rating is required");
+            }
+
+            Publication post = publicationService.getPostById(id)
+                    .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
+            
+            post.setRating(newRating);
+            Publication updatedPost = publicationService.updatePost(id, post);
+            return ResponseEntity.ok(updatedPost);
+        } catch (Exception e) {
+            logger.error("Error updating rating: ", e);
+            return ResponseEntity.internalServerError().body("Error updating rating: " + e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         publicationService.deletePost(id);

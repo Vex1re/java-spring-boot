@@ -56,18 +56,41 @@ public class PublicationService {
         Publication post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
         
-        post.setName(postDetails.getName());
-        post.setPlaceName(postDetails.getPlaceName());
-        post.setDescription(postDetails.getDescription());
-        post.setLocation(postDetails.getLocation());
-        post.setTime(postDetails.getTime());
-        post.setTag(postDetails.getTag());
-        post.setRating(postDetails.getRating());
-        
+        // Сохраняем все поля, проверяя на null
+        if (postDetails.getName() != null) {
+            post.setName(postDetails.getName());
+        }
+        if (postDetails.getPlaceName() != null) {
+            post.setPlaceName(postDetails.getPlaceName());
+        }
+        if (postDetails.getDescription() != null) {
+            post.setDescription(postDetails.getDescription());
+        }
+        if (postDetails.getLocation() != null) {
+            post.setLocation(postDetails.getLocation());
+        }
+        if (postDetails.getTime() != null) {
+            post.setTime(postDetails.getTime());
+        }
+        if (postDetails.getTag() != null) {
+            post.setTag(postDetails.getTag());
+        }
+        if (postDetails.getLogin() != null) {
+            post.setLogin(postDetails.getLogin());
+        }
         if (postDetails.getImages() != null) {
             post.setImages(postDetails.getImages());
         }
         
+        // Для числовых полей проверяем на 0
+        if (postDetails.getRating() != 0) {
+            post.setRating(postDetails.getRating());
+        }
+        if (postDetails.getCommentsCount() != null && postDetails.getCommentsCount() != 0) {
+            post.setCommentsCount(postDetails.getCommentsCount());
+        }
+        
+        logger.info("Updating post with id: {}, new data: {}", id, post);
         return postRepository.save(post);
     }
 
