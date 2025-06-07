@@ -73,8 +73,6 @@ public class PublicationController {
             
             post.setRating(newRating);
             Publication updatedPost = publicationService.updatePost(id, post);
-            logger.info("Updated rating for post {} from {} to {}", id, post.getRating(), newRating);
-            
             return ResponseEntity.ok(updatedPost);
         } catch (Exception e) {
             logger.error("Error updating rating: ", e);

@@ -56,8 +56,6 @@ public class PublicationService {
         Publication post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
         
-        logger.info("Updating post {} with details: {}", id, postDetails);
-        
         // Сохраняем все поля, проверяя на null
         if (postDetails.getName() != null) {
             post.setName(postDetails.getName());
@@ -86,17 +84,14 @@ public class PublicationService {
         
         // Для числовых полей проверяем на 0
         if (postDetails.getRating() != 0) {
-            logger.info("Updating rating from {} to {}", post.getRating(), postDetails.getRating());
             post.setRating(postDetails.getRating());
         }
         if (postDetails.getCommentsCount() != null && postDetails.getCommentsCount() != 0) {
             post.setCommentsCount(postDetails.getCommentsCount());
         }
         
-        logger.info("Saving updated post: {}", post);
-        Publication savedPost = postRepository.save(post);
-        logger.info("Successfully updated post: {}", savedPost);
-        return savedPost;
+        logger.info("Updating post with id: {}, new data: {}", id, post);
+        return postRepository.save(post);
     }
 
     public void deletePost(Long id) {
