@@ -13,7 +13,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/api/files/**")
-                .addResourceLocations("file:" + fileStorageConfig.getUploadDir() + "/");
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:" + fileStorageConfig.getUploadDir() + "/")
+                .setCachePeriod(3600)
+                .resourceChain(true);
     }
 } 

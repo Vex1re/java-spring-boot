@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/posts")
@@ -66,16 +67,20 @@ public class PublicationController {
     }
 
     @PostMapping("/{id}/images")
-    public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadImages(@PathVariable Long id, @RequestParam("files") MultipartFile[] files) {
         try {
-            String fileName = fileStorageService.storeFile(file);
-            String imageUrl = "/api/files/" + fileName;
+            List<String> imageUrls = new ArrayList<>();
             
-            Publication updatedPost = publicationService.addImageToPost(id, imageUrl);
+            for (MultipartFile file : files) {
+                String imageUrl = fileStorageService.storeFile(file);
+                imageUrls.add(imageUrl);
+            }
+            
+            Publication updatedPost = publicationService.addImagesToPost(id, imageUrls);
             return ResponseEntity.ok(updatedPost);
         } catch (Exception e) {
-            logger.error("Error uploading image: ", e);
-            return ResponseEntity.internalServerError().body("Error uploading image: " + e.getMessage());
+            logger.error("Error uploading images: ", e);
+            return ResponseEntity.internalServerError().body("Error uploading images: " + e.getMessage());
         }
     }
 

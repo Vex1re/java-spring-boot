@@ -75,7 +75,7 @@ public class PublicationService {
         postRepository.deleteById(id);
     }
 
-    public Publication addImageToPost(Long postId, String imageUrl) {
+    public Publication addImagesToPost(Long postId, List<String> imageUrls) {
         Publication post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
 
@@ -84,11 +84,11 @@ public class PublicationService {
             if (post.getImages() != null && !post.getImages().isEmpty()) {
                 images = objectMapper.readValue(post.getImages(), new TypeReference<List<String>>() {});
             }
-            images.add(imageUrl);
+            images.addAll(imageUrls);
             post.setImages(objectMapper.writeValueAsString(images));
             return postRepository.save(post);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to add image to post: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to add images to post: " + e.getMessage(), e);
         }
     }
 

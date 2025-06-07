@@ -47,7 +47,7 @@ public class FileStorageService {
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            return fileName;
+            return "/images/" + fileName;
         } catch (IOException ex) {
             throw new RuntimeException("Could not store file " + fileName, ex);
         }
