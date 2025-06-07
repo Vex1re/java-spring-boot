@@ -71,7 +71,6 @@ public class PublicationController {
             Publication post = publicationService.getPostById(id)
                     .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
             
-            logger.info("Updating rating for post {} from {} to {}", id, post.getRating(), newRating);
             post.setRating(newRating);
             Publication updatedPost = publicationService.updatePost(id, post);
             return ResponseEntity.ok(updatedPost);

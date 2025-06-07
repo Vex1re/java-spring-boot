@@ -36,6 +36,9 @@ public class PublicationService {
             if (post.getCommentsCount() == null) {
                 post.setCommentsCount(0);
             }
+            if (post.getRating() == 0) {
+                post.setRating(0);
+            }
             if (post.getImages() == null) {
                 post.setImages("[]");
             }
@@ -79,11 +82,11 @@ public class PublicationService {
             post.setImages(postDetails.getImages());
         }
         
-        // Обновляем рейтинг всегда
-        post.setRating(postDetails.getRating());
-        
-        // Для commentsCount проверяем на null
-        if (postDetails.getCommentsCount() != null) {
+        // Для числовых полей проверяем на 0
+        if (postDetails.getRating() != 0) {
+            post.setRating(postDetails.getRating());
+        }
+        if (postDetails.getCommentsCount() != null && postDetails.getCommentsCount() != 0) {
             post.setCommentsCount(postDetails.getCommentsCount());
         }
         
