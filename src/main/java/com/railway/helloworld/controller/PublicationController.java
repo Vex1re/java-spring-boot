@@ -63,16 +63,32 @@ public class PublicationController {
     @PutMapping("/{id}/rating")
     public ResponseEntity<?> updateRating(@PathVariable Long id, @RequestBody Map<String, Integer> ratingData) {
         try {
+            logger.info("Received rating update request for post {} with data: {}", id, ratingData);
+            
             Integer newRating = ratingData.get("rating");
+            logger.info("Extracted rating value: {}", newRating);
+            
             if (newRating == null) {
+                logger.error("Rating is null in request data");
                 return ResponseEntity.badRequest().body("Rating is required");
             }
 
+            // Получаем текущий пост
             Publication post = publicationService.getPostById(id)
                     .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
             
+            logger.info("Current post state: {}", post);
+            logger.info("Current rating: {}", post.getRating());
+            
+            // Устанавливаем новый рейтинг
             post.setRating(newRating);
+            logger.info("Set new rating to: {}", post.getRating());
+            
+            // Обновляем пост
             Publication updatedPost = publicationService.updatePost(id, post);
+            logger.info("Updated post state: {}", updatedPost);
+            logger.info("Final rating value: {}", updatedPost.getRating());
+            
             return ResponseEntity.ok(updatedPost);
         } catch (Exception e) {
             logger.error("Error updating rating: ", e);
