@@ -287,39 +287,4 @@ public class PublicationController {
             return ResponseEntity.internalServerError().body("Error getting user reactions: " + e.getMessage());
         }
     }
-
-    @GetMapping("/user/{userLogin}/liked")
-    public ResponseEntity<?> getLikedPosts(@PathVariable String userLogin) {
-        try {
-            if (userLogin == null || userLogin.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("User login is required");
-            }
-
-            logger.info("Getting liked posts for user {}", userLogin);
-            List<Publication> allPosts = publicationService.getAllPosts();
-            List<Publication> likedPosts = new ArrayList<>();
-            
-            for (Publication post : allPosts) {
-                String likes = post.getLikes();
-                if (likes != null && !likes.isEmpty()) {
-                    try {
-                        List<String> likesList = objectMapper.readValue(likes, new TypeReference<List<String>>() {});
-                        for (String reaction : likesList) {
-                            if (reaction.startsWith(userLogin + ":") && reaction.endsWith(":true")) {
-                                likedPosts.add(post);
-                                break;
-                            }
-                        }
-                    } catch (Exception e) {
-                        logger.warn("Failed to parse likes JSON for post {}. Error: {}", post.getId(), e.getMessage());
-                    }
-                }
-            }
-            
-            return ResponseEntity.ok(likedPosts);
-        } catch (Exception e) {
-            logger.error("Error getting liked posts: ", e);
-            return ResponseEntity.internalServerError().body("Error getting liked posts: " + e.getMessage());
-        }
-    }
 }
