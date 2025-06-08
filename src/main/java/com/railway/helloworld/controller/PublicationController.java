@@ -152,10 +152,21 @@ public class PublicationController {
             List<String> imageUrls = new ArrayList<>();
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
-                    String imageUrl = fileStorageService.storeFile(file);
+                    // Проверяем тип файла
+                    String contentType = file.getContentType();
+                    if (contentType == null || !contentType.startsWith("image/")) {
+                        logger.warn("Skipping non-image file: {}", file.getOriginalFilename());
+                        continue;
+                    }
+                    
+                    String imageUrl = fileStorageService.storeFile(file, "image");
                     imageUrls.add(imageUrl);
                     logger.info("Successfully stored file: {}", imageUrl);
                 }
+            }
+            
+            if (imageUrls.isEmpty()) {
+                return ResponseEntity.badRequest().body("No valid image files were uploaded");
             }
             
             Publication updatedPost = publicationService.addImagesToPost(id, imageUrls);
