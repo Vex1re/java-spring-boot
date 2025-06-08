@@ -64,48 +64,19 @@ public class UserController {
                 return ResponseEntity.badRequest().body("Файл не выбран");
             }
             
-            // Получаем текущего пользователя
-            User user = userService.getUserById(id)
-                    .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-
-            // Удаляем старый аватар, если он есть
-            if (user.getAvatar() != null) {
-                fileStorageService.deleteFile(user.getAvatar());
-            }
-            
-            // Сохраняем новый файл
+            // Сохраняем файл через FileStorageService
             String fileUrl = fileStorageService.storeFile(file);
             logger.info("Avatar uploaded successfully: {}", fileUrl);
 
             // Обновляем пользователя
+            User user = userService.getUserById(id).orElseThrow(() -> new RuntimeException("User not found"));
             user.setAvatar(fileUrl);
             userService.updateUser(id, user);
 
             return ResponseEntity.ok().body(fileUrl);
         } catch (Exception e) {
             logger.error("Error uploading avatar: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Ошибка загрузки: " + e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/{id}/avatar")
-    public ResponseEntity<?> deleteAvatar(@PathVariable Long id) {
-        try {
-            User user = userService.getUserById(id)
-                    .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-
-            if (user.getAvatar() != null) {
-                fileStorageService.deleteFile(user.getAvatar());
-                user.setAvatar(null);
-                userService.updateUser(id, user);
-            }
-
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            logger.error("Error deleting avatar: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Ошибка удаления: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка загрузки: " + e.getMessage());
         }
     }
 }
