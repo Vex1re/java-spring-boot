@@ -133,6 +133,31 @@ public class PublicationController {
         }
     }
 
+    @GetMapping("/{id}/likes/check")
+    public ResponseEntity<?> checkLike(
+            @PathVariable Long id,
+            @RequestParam(required = true) String userLogin) {
+        try {
+            if (userLogin == null || userLogin.trim().isEmpty()) {
+                logger.warn("Attempt to check like with empty userLogin for post {}", id);
+                return ResponseEntity.badRequest().body("User login is required");
+            }
+
+            logger.info("Checking like for user {} on post {}", userLogin, id);
+            boolean hasLiked = publicationService.hasUserLikedPost(id, userLogin);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("hasLiked", hasLiked);
+            response.put("postId", id);
+            response.put("userLogin", userLogin);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error checking like: ", e);
+            return ResponseEntity.internalServerError().body("Error checking like: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/{id}/like")
     public ResponseEntity<?> addLike(@PathVariable Long id, @RequestBody Map<String, String> userData) {
         try {
@@ -176,29 +201,6 @@ public class PublicationController {
         } catch (Exception e) {
             logger.error("Error removing like: ", e);
             return ResponseEntity.internalServerError().body("Error removing like: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/{id}/likes/check")
-    public ResponseEntity<?> checkLike(@PathVariable Long id, @RequestParam String userLogin) {
-        try {
-            if (userLogin == null || userLogin.trim().isEmpty()) {
-                logger.warn("Attempt to check like with empty userLogin for post {}", id);
-                return ResponseEntity.badRequest().body("User login is required");
-            }
-
-            logger.info("Checking like for user {} on post {}", userLogin, id);
-            boolean hasLiked = publicationService.hasUserLikedPost(id, userLogin);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("hasLiked", hasLiked);
-            response.put("postId", id);
-            response.put("userLogin", userLogin);
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Error checking like: ", e);
-            return ResponseEntity.internalServerError().body("Error checking like: " + e.getMessage());
         }
     }
 }
