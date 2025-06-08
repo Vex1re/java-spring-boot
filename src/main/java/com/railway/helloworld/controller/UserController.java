@@ -59,28 +59,53 @@ public class UserController {
 
     @PostMapping("/{id}/avatar")
     public ResponseEntity<?> uploadAvatar(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body("File is empty");
-        }
         try {
-            // Генерируем уникальное имя файла
-            String fileName = java.util.UUID.randomUUID() + "_" + file.getOriginalFilename();
-            java.nio.file.Path uploadPath = java.nio.file.Paths.get("uploads/images/");
-            if (!java.nio.file.Files.exists(uploadPath)) {
-                java.nio.file.Files.createDirectories(uploadPath);
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Файл не выбран");
             }
-            java.nio.file.Path filePath = uploadPath.resolve(fileName);
-            java.nio.file.Files.copy(file.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            
+            // Получаем текущего пользователя
+            User user = userService.getUserById(id)
+                    .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
 
-            // Сохраняем ссылку в базу
-            User user = userService.getUserById(id).orElseThrow(() -> new RuntimeException("User not found"));
-            user.setAvatar("/uploads/images/" + fileName);
+            // Удаляем старый аватар, если он есть
+            if (user.getAvatar() != null) {
+                fileStorageService.deleteFile(user.getAvatar());
+            }
+            
+            // Сохраняем новый файл
+            String fileUrl = fileStorageService.storeFile(file);
+            logger.info("Avatar uploaded successfully: {}", fileUrl);
+
+            // Обновляем пользователя
+            user.setAvatar(fileUrl);
             userService.updateUser(id, user);
 
-            return ResponseEntity.ok("/uploads/images/" + fileName);
+            return ResponseEntity.ok().body(fileUrl);
         } catch (Exception e) {
             logger.error("Error uploading avatar: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload avatar");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Ошибка загрузки: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}/avatar")
+    public ResponseEntity<?> deleteAvatar(@PathVariable Long id) {
+        try {
+            User user = userService.getUserById(id)
+                    .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+            if (user.getAvatar() != null) {
+                fileStorageService.deleteFile(user.getAvatar());
+                user.setAvatar(null);
+                userService.updateUser(id, user);
+            }
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error deleting avatar: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Ошибка удаления: " + e.getMessage());
         }
     }
 }
