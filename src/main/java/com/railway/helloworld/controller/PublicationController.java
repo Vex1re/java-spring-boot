@@ -82,11 +82,7 @@ public class PublicationController {
             Publication post = publicationService.getPostById(id)
                     .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
             
-            // Обновляем рейтинг поста
-            int currentRating = post.getRating();
-            post.setRating(currentRating + (isPositive ? 1 : -1));
-            
-            // Обновляем информацию о лайках
+            // Получаем текущий список лайков
             String currentLikes = post.getLikes();
             List<String> likes = new ArrayList<>();
             if (currentLikes != null && !currentLikes.isEmpty()) {
@@ -97,13 +93,30 @@ public class PublicationController {
                 }
             }
             
-            // Удаляем предыдущую реакцию пользователя, если она есть
+            // Находим предыдущую реакцию пользователя
+            String previousReaction = likes.stream()
+                    .filter(like -> like.startsWith(userLogin + ":"))
+                    .findFirst()
+                    .orElse(null);
+            
+            // Удаляем предыдущую реакцию пользователя
             likes = likes.stream()
                     .filter(like -> !like.startsWith(userLogin + ":"))
                     .collect(Collectors.toList());
             
             // Добавляем новую реакцию
             likes.add(userLogin + ":" + isPositive);
+            
+            // Обновляем рейтинг поста
+            int currentRating = post.getRating();
+            if (previousReaction != null) {
+                // Если была предыдущая реакция, вычитаем её влияние
+                boolean wasPositive = previousReaction.endsWith(":true");
+                currentRating += (wasPositive ? -1 : 1);
+            }
+            // Добавляем влияние новой реакции
+            currentRating += (isPositive ? 1 : -1);
+            post.setRating(currentRating);
             
             // Сохраняем обновленный список лайков
             post.setLikes(objectMapper.writeValueAsString(likes));
