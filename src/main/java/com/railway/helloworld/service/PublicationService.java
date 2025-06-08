@@ -131,4 +131,58 @@ public class PublicationService {
             throw new RuntimeException("Failed to remove image from post: " + e.getMessage(), e);
         }
     }
+
+    public Publication addLikeToPost(Long postId, String userLogin) {
+        Publication post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
+
+        try {
+            List<String> likes = new ArrayList<>();
+            if (post.getLikes() != null && !post.getLikes().isEmpty()) {
+                likes = objectMapper.readValue(post.getLikes(), new TypeReference<List<String>>() {});
+            }
+            
+            if (!likes.contains(userLogin)) {
+                likes.add(userLogin);
+                post.setLikes(objectMapper.writeValueAsString(likes));
+                return postRepository.save(post);
+            }
+            
+            return post;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to add like to post: " + e.getMessage(), e);
+        }
+    }
+
+    public Publication removeLikeFromPost(Long postId, String userLogin) {
+        Publication post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
+
+        try {
+            if (post.getLikes() != null && !post.getLikes().isEmpty()) {
+                List<String> likes = objectMapper.readValue(post.getLikes(), new TypeReference<List<String>>() {});
+                likes.remove(userLogin);
+                post.setLikes(objectMapper.writeValueAsString(likes));
+                return postRepository.save(post);
+            }
+            return post;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to remove like from post: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean hasUserLikedPost(Long postId, String userLogin) {
+        Publication post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
+
+        try {
+            if (post.getLikes() != null && !post.getLikes().isEmpty()) {
+                List<String> likes = objectMapper.readValue(post.getLikes(), new TypeReference<List<String>>() {});
+                return likes.contains(userLogin);
+            }
+            return false;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to check if user liked post: " + e.getMessage(), e);
+        }
+    }
 }

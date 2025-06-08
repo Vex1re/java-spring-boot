@@ -19,12 +19,14 @@ public class Publication {
     private Integer commentsCount;
     private String tag;
     private String login;
+    private String likes;
 
     @Column(columnDefinition = "jsonb")
     private String images;
 
     public Publication() {
         this.commentsCount = 0;
+        this.likes = "[]"; // Инициализируем пустым JSON массивом
     }
 
     public Publication(String name, String tag, String location, String time, String placeName, String description, int rating, Integer commentsCount, String login) {
@@ -37,6 +39,7 @@ public class Publication {
         this.commentsCount = commentsCount != null ? commentsCount : 0;
         this.tag = tag;
         this.login = login;
+        this.likes = "[]"; // Инициализируем пустым JSON массивом
     }
 
     public String getTag() {
@@ -123,6 +126,14 @@ public class Publication {
         this.images = images;
     }
 
+    public String getLikes() {
+        return likes;
+    }
+
+    public void setLikes(String likes) {
+        this.likes = likes;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -136,6 +147,7 @@ public class Publication {
                 ", commentsCount=" + commentsCount + '\'' +
                 ", tag=" + tag + '\'' +
                 ", login=" + login + '\'' +
+                ", likes=" + likes + '\'' +
                 ", images=" + images + '\'' +
                 '}';
     }

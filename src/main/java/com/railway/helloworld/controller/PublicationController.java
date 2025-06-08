@@ -132,4 +132,49 @@ public class PublicationController {
             return ResponseEntity.internalServerError().body("Error removing image: " + e.getMessage());
         }
     }
+
+    @PostMapping("/{id}/like")
+    public ResponseEntity<?> addLike(@PathVariable Long id, @RequestBody Map<String, String> userData) {
+        try {
+            String userLogin = userData.get("userLogin");
+            if (userLogin == null) {
+                return ResponseEntity.badRequest().body("User login is required");
+            }
+
+            Publication updatedPost = publicationService.addLikeToPost(id, userLogin);
+            return ResponseEntity.ok(updatedPost);
+        } catch (Exception e) {
+            logger.error("Error adding like: ", e);
+            return ResponseEntity.internalServerError().body("Error adding like: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}/like")
+    public ResponseEntity<?> removeLike(@PathVariable Long id, @RequestBody Map<String, String> userData) {
+        try {
+            String userLogin = userData.get("userLogin");
+            if (userLogin == null) {
+                return ResponseEntity.badRequest().body("User login is required");
+            }
+
+            Publication updatedPost = publicationService.removeLikeFromPost(id, userLogin);
+            return ResponseEntity.ok(updatedPost);
+        } catch (Exception e) {
+            logger.error("Error removing like: ", e);
+            return ResponseEntity.internalServerError().body("Error removing like: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/like/check")
+    public ResponseEntity<?> checkLike(@PathVariable Long id, @RequestParam String userLogin) {
+        try {
+            boolean hasLiked = publicationService.hasUserLikedPost(id, userLogin);
+            Map<String, Boolean> response = new HashMap<>();
+            response.put("hasLiked", hasLiked);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error checking like: ", e);
+            return ResponseEntity.internalServerError().body("Error checking like: " + e.getMessage());
+        }
+    }
 }
