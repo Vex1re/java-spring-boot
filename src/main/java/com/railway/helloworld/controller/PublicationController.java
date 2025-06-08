@@ -72,8 +72,6 @@ public class PublicationController {
             String userLogin = (String) ratingData.get("userLogin");
             Boolean isPositive = (Boolean) ratingData.get("isPositive");
             
-            logger.info("Received rating update request - Post ID: {}, User: {}, isPositive: {}", id, userLogin, isPositive);
-            
             if (userLogin == null || userLogin.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("User login is required");
             }
@@ -87,7 +85,6 @@ public class PublicationController {
             if (currentLikes != null && !currentLikes.isEmpty()) {
                 try {
                     likes = objectMapper.readValue(currentLikes, new TypeReference<List<String>>() {});
-                    logger.info("Current likes for post {}: {}", id, likes);
                 } catch (Exception e) {
                     logger.warn("Failed to parse likes JSON, initializing empty list. Error: {}", e.getMessage());
                 }
@@ -99,8 +96,6 @@ public class PublicationController {
                     .findFirst()
                     .orElse(null);
             
-            logger.info("Previous reaction for user {} on post {}: {}", userLogin, id, previousReaction);
-            
             // Удаляем предыдущую реакцию пользователя
             likes = likes.stream()
                     .filter(like -> !like.startsWith(userLogin + ":"))
@@ -109,7 +104,6 @@ public class PublicationController {
             // Если isPositive != null, добавляем новую реакцию
             if (isPositive != null) {
                 likes.add(userLogin + ":" + isPositive);
-                logger.info("Added new reaction for user {} on post {}: {}", userLogin, id, isPositive);
             }
             
             // Обновляем рейтинг поста
@@ -118,18 +112,15 @@ public class PublicationController {
                 // Если была предыдущая реакция, вычитаем её влияние
                 boolean wasPositive = previousReaction.endsWith(":true");
                 currentRating += (wasPositive ? -1 : 1);
-                logger.info("Removed previous reaction influence. Was positive: {}, New rating: {}", wasPositive, currentRating);
             }
             if (isPositive != null) {
                 // Добавляем влияние новой реакции
                 currentRating += (isPositive ? 1 : -1);
-                logger.info("Added new reaction influence. Is positive: {}, Final rating: {}", isPositive, currentRating);
             }
             post.setRating(currentRating);
             
             // Сохраняем обновленный список лайков
             post.setLikes(objectMapper.writeValueAsString(likes));
-            logger.info("Updated likes for post {}: {}", id, likes);
             
             Publication updatedPost = publicationService.updatePost(id, post);
             return ResponseEntity.ok(updatedPost);
