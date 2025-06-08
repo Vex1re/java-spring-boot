@@ -133,7 +133,7 @@ public class PublicationController {
         }
     }
 
-    @GetMapping("/{id}/likes/check")
+    @GetMapping(value = {"/{id}/likes/check", "/{id}/likes/check/"})
     public ResponseEntity<?> checkLike(
             @PathVariable Long id,
             @RequestParam(required = true) String userLogin) {
@@ -158,7 +158,7 @@ public class PublicationController {
         }
     }
 
-    @PostMapping("/{id}/like")
+    @PostMapping(value = {"/{id}/like", "/{id}/like/"})
     public ResponseEntity<?> addLike(@PathVariable Long id, @RequestBody Map<String, String> userData) {
         try {
             String userLogin = userData.get("userLogin");
@@ -181,7 +181,7 @@ public class PublicationController {
         }
     }
 
-    @DeleteMapping("/{id}/like")
+    @DeleteMapping(value = {"/{id}/like", "/{id}/like/"})
     public ResponseEntity<?> removeLike(@PathVariable Long id, @RequestBody Map<String, String> userData) {
         try {
             String userLogin = userData.get("userLogin");
