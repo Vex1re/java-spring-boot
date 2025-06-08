@@ -66,7 +66,7 @@ public class FileStorageService {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             logger.info("File stored successfully at: {}", targetLocation);
-            return "/images/" + fileName;
+            return "/uploads/images/" + fileName;
         } catch (IOException ex) {
             logger.error("Failed to store file: ", ex);
             throw new RuntimeException("Could not store file. Please try again!", ex);
