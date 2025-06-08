@@ -75,9 +75,6 @@ public class PublicationController {
             if (userLogin == null || userLogin.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("User login is required");
             }
-            if (isPositive == null) {
-                return ResponseEntity.badRequest().body("Rating value is required");
-            }
 
             Publication post = publicationService.getPostById(id)
                     .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
@@ -104,8 +101,10 @@ public class PublicationController {
                     .filter(like -> !like.startsWith(userLogin + ":"))
                     .collect(Collectors.toList());
             
-            // Добавляем новую реакцию
-            likes.add(userLogin + ":" + isPositive);
+            // Если isPositive != null, добавляем новую реакцию
+            if (isPositive != null) {
+                likes.add(userLogin + ":" + isPositive);
+            }
             
             // Обновляем рейтинг поста
             int currentRating = post.getRating();
@@ -114,8 +113,10 @@ public class PublicationController {
                 boolean wasPositive = previousReaction.endsWith(":true");
                 currentRating += (wasPositive ? -1 : 1);
             }
-            // Добавляем влияние новой реакции
-            currentRating += (isPositive ? 1 : -1);
+            if (isPositive != null) {
+                // Добавляем влияние новой реакции
+                currentRating += (isPositive ? 1 : -1);
+            }
             post.setRating(currentRating);
             
             // Сохраняем обновленный список лайков
