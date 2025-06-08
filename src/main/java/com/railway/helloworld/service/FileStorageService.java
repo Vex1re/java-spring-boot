@@ -61,12 +61,12 @@ public class FileStorageService {
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String fileName = UUID.randomUUID().toString() + fileExtension;
 
-            // Сохранение файла
+            // Сохранение файла в корневой директории uploads
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             logger.info("File stored successfully at: {}", targetLocation);
-            return "/uploads/images/" + fileName;
+            return "/uploads/" + fileName;
         } catch (IOException ex) {
             logger.error("Failed to store file: ", ex);
             throw new RuntimeException("Could not store file. Please try again!", ex);

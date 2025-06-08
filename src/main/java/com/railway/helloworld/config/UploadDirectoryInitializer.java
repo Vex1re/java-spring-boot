@@ -33,19 +33,8 @@ public class UploadDirectoryInitializer implements CommandLineRunner {
             logger.info("Upload directory already exists: {}", absolutePath);
         }
 
-        // Создаем поддиректории
-        Path avatarsPath = uploadPath.resolve("avatars");
-        Path imagesPath = uploadPath.resolve("images");
-        
-        Files.createDirectories(avatarsPath);
-        Files.createDirectories(imagesPath);
-        
-        logger.info("Created subdirectories: avatars and images");
-
-        // Проверяем права доступа для всех директорий
+        // Проверяем права доступа для директории
         setDirectoryPermissions(uploadPath.toFile());
-        setDirectoryPermissions(avatarsPath.toFile());
-        setDirectoryPermissions(imagesPath.toFile());
         
         // Проверяем свободное место
         long freeSpace = uploadPath.toFile().getFreeSpace();
