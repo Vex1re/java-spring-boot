@@ -31,6 +31,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         user.setName(userDetails.getName());
         user.setEmail(userDetails.getEmail());
+        user.setAvatar(userDetails.getAvatar());
         return userRepository.save(user);
     }
 
