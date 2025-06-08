@@ -64,14 +64,8 @@ public class UserController {
                 return ResponseEntity.badRequest().body("Файл не выбран");
             }
             
-            // Проверяем тип файла
-            String contentType = file.getContentType();
-            if (contentType == null || !contentType.startsWith("image/")) {
-                return ResponseEntity.badRequest().body("Файл должен быть изображением");
-            }
-            
-            // Сохраняем файл через FileStorageService с типом "avatar"
-            String fileUrl = fileStorageService.storeFile(file, "avatar");
+            // Сохраняем файл через FileStorageService
+            String fileUrl = fileStorageService.storeFile(file);
             logger.info("Avatar uploaded successfully: {}", fileUrl);
 
             // Обновляем пользователя

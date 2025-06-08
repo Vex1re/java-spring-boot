@@ -20,34 +20,25 @@ import java.util.UUID;
 public class FileStorageService {
     private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
     private final Path fileStorageLocation;
-    private final Path imagesLocation;
-    private final Path avatarsLocation;
 
     @Autowired
     public FileStorageService(FileStorageConfig fileStorageConfig) {
         this.fileStorageLocation = Paths.get(fileStorageConfig.getUploadDir())
                 .toAbsolutePath().normalize();
-        this.imagesLocation = this.fileStorageLocation.resolve("images");
-        this.avatarsLocation = this.fileStorageLocation.resolve("avatars");
-        logger.info("File storage locations initialized:");
-        logger.info("Main location: {}", this.fileStorageLocation);
-        logger.info("Images location: {}", this.imagesLocation);
-        logger.info("Avatars location: {}", this.avatarsLocation);
+        logger.info("File storage location initialized at: {}", this.fileStorageLocation);
     }
 
     @PostConstruct
     public void init() {
         try {
             Files.createDirectories(fileStorageLocation);
-            Files.createDirectories(imagesLocation);
-            Files.createDirectories(avatarsLocation);
-            logger.info("All upload directories initialized successfully");
+            logger.info("Upload directory initialized at: {}", fileStorageLocation);
         } catch (IOException ex) {
-            throw new RuntimeException("Could not create the directories where the uploaded files will be stored.", ex);
+            throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
         }
     }
 
-    public String storeFile(MultipartFile file, String type) {
+    public String storeFile(MultipartFile file) {
         try {
             // Проверка на пустой файл
             if (file.isEmpty()) {
@@ -70,22 +61,12 @@ public class FileStorageService {
             String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String fileName = UUID.randomUUID().toString() + fileExtension;
 
-            // Выбор директории для сохранения
-            Path targetLocation;
-            String returnPath;
-            if ("avatar".equals(type)) {
-                targetLocation = this.avatarsLocation.resolve(fileName);
-                returnPath = "/uploads/avatars/" + fileName;
-            } else {
-                targetLocation = this.imagesLocation.resolve(fileName);
-                returnPath = "/uploads/images/" + fileName;
-            }
-
             // Сохранение файла
+            Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             logger.info("File stored successfully at: {}", targetLocation);
-            return returnPath;
+            return "/uploads/images/" + fileName;
         } catch (IOException ex) {
             logger.error("Failed to store file: ", ex);
             throw new RuntimeException("Could not store file. Please try again!", ex);
