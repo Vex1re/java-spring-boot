@@ -4,6 +4,7 @@ import com.railway.helloworld.model.Publication;
 import com.railway.helloworld.service.PublicationService;
 import com.railway.helloworld.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
@@ -86,18 +87,35 @@ public class PublicationController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/images")
-    public ResponseEntity<?> uploadImages(@PathVariable Long id, @RequestParam("files") MultipartFile[] files) {
+    @PostMapping(value = "/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImages(
+            @PathVariable Long id,
+            @RequestPart(value = "files", required = false) MultipartFile[] files,
+            @RequestPart(value = "items", required = false) String items,
+            @RequestPart(value = "isAny", required = false) String isAny) {
         try {
-            List<String> imageUrls = new ArrayList<>();
+            logger.info("Received upload request for post id: {}, files count: {}", id, files != null ? files.length : 0);
             
+            if (files == null || files.length == 0) {
+                return ResponseEntity.badRequest().body("No files provided");
+            }
+
+            List<String> imageUrls = new ArrayList<>();
             for (MultipartFile file : files) {
-                String imageUrl = fileStorageService.storeFile(file);
-                imageUrls.add(imageUrl);
+                if (!file.isEmpty()) {
+                    String imageUrl = fileStorageService.storeFile(file);
+                    imageUrls.add(imageUrl);
+                    logger.info("Successfully stored file: {}", imageUrl);
+                }
             }
             
             Publication updatedPost = publicationService.addImagesToPost(id, imageUrls);
-            return ResponseEntity.ok(updatedPost);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("post", updatedPost);
+            response.put("uploadedFiles", imageUrls);
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error uploading images: ", e);
             return ResponseEntity.internalServerError().body("Error uploading images: " + e.getMessage());
