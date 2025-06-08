@@ -19,6 +19,8 @@ public class Publication {
     private Integer commentsCount;
     private String tag;
     private String login;
+
+    @Column(columnDefinition = "jsonb")
     private String likes;
 
     @Column(columnDefinition = "jsonb")
@@ -26,7 +28,7 @@ public class Publication {
 
     public Publication() {
         this.commentsCount = 0;
-        this.likes = "[]"; // Инициализируем пустым JSON массивом
+        this.likes = "[]";
     }
 
     public Publication(String name, String tag, String location, String time, String placeName, String description, int rating, Integer commentsCount, String login) {
@@ -39,7 +41,7 @@ public class Publication {
         this.commentsCount = commentsCount != null ? commentsCount : 0;
         this.tag = tag;
         this.login = login;
-        this.likes = "[]"; // Инициализируем пустым JSON массивом
+        this.likes = "[]";
     }
 
     public String getTag() {
@@ -127,28 +129,28 @@ public class Publication {
     }
 
     public String getLikes() {
-        return likes;
+        return likes != null ? likes : "[]";
     }
 
     public void setLikes(String likes) {
-        this.likes = likes;
+        this.likes = likes != null ? likes : "[]";
     }
 
     @Override
     public String toString() {
-        return "User{" +
+        return "Publication{" +
                 "id=" + id +
-                ", name=" + name + '\'' +
-                ", location=" + location + '\'' +
-                ", time=" + time + '\'' +
-                ", placeName=" + placeName + '\'' +
-                ", description=" + description + '\'' +
-                ", rating=" + rating + '\'' +
-                ", commentsCount=" + commentsCount + '\'' +
-                ", tag=" + tag + '\'' +
-                ", login=" + login + '\'' +
-                ", likes=" + likes + '\'' +
-                ", images=" + images + '\'' +
+                ", name='" + name + '\'' +
+                ", location='" + location + '\'' +
+                ", time='" + time + '\'' +
+                ", placeName='" + placeName + '\'' +
+                ", description='" + description + '\'' +
+                ", rating=" + rating +
+                ", commentsCount=" + commentsCount +
+                ", tag='" + tag + '\'' +
+                ", login='" + login + '\'' +
+                ", likes='" + likes + '\'' +
+                ", images='" + images + '\'' +
                 '}';
     }
 

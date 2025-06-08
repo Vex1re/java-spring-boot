@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 public class PublicationService {
@@ -138,18 +139,32 @@ public class PublicationService {
 
         try {
             List<String> likes = new ArrayList<>();
-            if (post.getLikes() != null && !post.getLikes().isEmpty()) {
-                likes = objectMapper.readValue(post.getLikes(), new TypeReference<List<String>>() {});
+            String currentLikes = post.getLikes();
+            
+            if (currentLikes != null && !currentLikes.isEmpty()) {
+                try {
+                    likes = objectMapper.readValue(currentLikes, new TypeReference<List<String>>() {});
+                } catch (Exception e) {
+                    logger.warn("Failed to parse likes JSON, initializing empty list. Error: {}", e.getMessage());
+                }
             }
             
-            if (!likes.contains(userLogin)) {
-                likes.add(userLogin);
-                post.setLikes(objectMapper.writeValueAsString(likes));
+            // Проверяем, есть ли уже лайк от этого пользователя
+            boolean userLiked = likes.stream()
+                    .anyMatch(like -> like.startsWith(userLogin + ":"));
+            
+            if (!userLiked) {
+                likes.add(userLogin + ":true");
+                String newLikes = objectMapper.writeValueAsString(likes);
+                logger.info("Adding like for user {} to post {}. New likes: {}", userLogin, postId, newLikes);
+                post.setLikes(newLikes);
                 return postRepository.save(post);
             }
             
+            logger.info("User {} already liked post {}", userLogin, postId);
             return post;
         } catch (Exception e) {
+            logger.error("Failed to add like to post: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to add like to post: " + e.getMessage(), e);
         }
     }
@@ -159,14 +174,29 @@ public class PublicationService {
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
 
         try {
-            if (post.getLikes() != null && !post.getLikes().isEmpty()) {
-                List<String> likes = objectMapper.readValue(post.getLikes(), new TypeReference<List<String>>() {});
-                likes.remove(userLogin);
-                post.setLikes(objectMapper.writeValueAsString(likes));
-                return postRepository.save(post);
+            String currentLikes = post.getLikes();
+            if (currentLikes != null && !currentLikes.isEmpty()) {
+                List<String> likes;
+                try {
+                    likes = objectMapper.readValue(currentLikes, new TypeReference<List<String>>() {});
+                    // Удаляем лайк пользователя
+                    likes = likes.stream()
+                            .filter(like -> !like.startsWith(userLogin + ":"))
+                            .collect(Collectors.toList());
+                    
+                    String newLikes = objectMapper.writeValueAsString(likes);
+                    logger.info("Removing like for user {} from post {}. New likes: {}", userLogin, postId, newLikes);
+                    post.setLikes(newLikes);
+                    return postRepository.save(post);
+                } catch (Exception e) {
+                    logger.warn("Failed to parse likes JSON, skipping removal. Error: {}", e.getMessage());
+                }
             }
+            
+            logger.info("User {} hasn't liked post {}", userLogin, postId);
             return post;
         } catch (Exception e) {
+            logger.error("Failed to remove like from post: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to remove like from post: " + e.getMessage(), e);
         }
     }
@@ -176,12 +206,21 @@ public class PublicationService {
                 .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
 
         try {
-            if (post.getLikes() != null && !post.getLikes().isEmpty()) {
-                List<String> likes = objectMapper.readValue(post.getLikes(), new TypeReference<List<String>>() {});
-                return likes.contains(userLogin);
+            String currentLikes = post.getLikes();
+            if (currentLikes != null && !currentLikes.isEmpty()) {
+                try {
+                    List<String> likes = objectMapper.readValue(currentLikes, new TypeReference<List<String>>() {});
+                    boolean hasLiked = likes.stream()
+                            .anyMatch(like -> like.startsWith(userLogin + ":") && like.endsWith(":true"));
+                    logger.info("Checking like for user {} on post {}. Result: {}", userLogin, postId, hasLiked);
+                    return hasLiked;
+                } catch (Exception e) {
+                    logger.warn("Failed to parse likes JSON, returning false. Error: {}", e.getMessage());
+                }
             }
             return false;
         } catch (Exception e) {
+            logger.error("Failed to check if user liked post: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to check if user liked post: " + e.getMessage(), e);
         }
     }
