@@ -20,6 +20,7 @@ public class UploadDirectoryInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        // Создаем основную директорию для загрузок
         Path uploadPath = Paths.get(fileStorageConfig.getUploadDir());
         String absolutePath = uploadPath.toAbsolutePath().toString();
         
@@ -32,24 +33,38 @@ public class UploadDirectoryInitializer implements CommandLineRunner {
             logger.info("Upload directory already exists: {}", absolutePath);
         }
 
-        // Проверяем права доступа
-        File uploadDir = uploadPath.toFile();
-        boolean canRead = uploadDir.canRead();
-        boolean canWrite = uploadDir.canWrite();
-        boolean canExecute = uploadDir.canExecute();
+        // Создаем поддиректории
+        Path avatarsPath = uploadPath.resolve("avatars");
+        Path imagesPath = uploadPath.resolve("images");
         
-        logger.info("Directory permissions - Read: {}, Write: {}, Execute: {}", 
-                   canRead, canWrite, canExecute);
+        Files.createDirectories(avatarsPath);
+        Files.createDirectories(imagesPath);
+        
+        logger.info("Created subdirectories: avatars and images");
 
-        // Устанавливаем права доступа
-        uploadDir.setReadable(true, false);
-        uploadDir.setWritable(true, false);
-        uploadDir.setExecutable(true, false);
-        
-        logger.info("Directory permissions updated");
+        // Проверяем права доступа для всех директорий
+        setDirectoryPermissions(uploadPath.toFile());
+        setDirectoryPermissions(avatarsPath.toFile());
+        setDirectoryPermissions(imagesPath.toFile());
         
         // Проверяем свободное место
-        long freeSpace = uploadDir.getFreeSpace();
+        long freeSpace = uploadPath.toFile().getFreeSpace();
         logger.info("Available space in upload directory: {} MB", freeSpace / (1024 * 1024));
+    }
+    
+    private void setDirectoryPermissions(File directory) {
+        boolean canRead = directory.canRead();
+        boolean canWrite = directory.canWrite();
+        boolean canExecute = directory.canExecute();
+        
+        logger.info("Directory {} permissions - Read: {}, Write: {}, Execute: {}", 
+                   directory.getAbsolutePath(), canRead, canWrite, canExecute);
+
+        // Устанавливаем права доступа
+        directory.setReadable(true, false);
+        directory.setWritable(true, false);
+        directory.setExecutable(true, false);
+        
+        logger.info("Directory {} permissions updated", directory.getAbsolutePath());
     }
 } 
