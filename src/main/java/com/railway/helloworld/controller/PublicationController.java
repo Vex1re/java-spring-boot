@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/posts")
@@ -26,6 +28,9 @@ public class PublicationController {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GetMapping("/{id}")
     public ResponseEntity<Publication> getPostById(@PathVariable long id) {
@@ -62,17 +67,47 @@ public class PublicationController {
     }
 
     @PutMapping("/{id}/rating")
-    public ResponseEntity<?> updateRating(@PathVariable Long id, @RequestBody Map<String, Integer> ratingData) {
+    public ResponseEntity<?> updateRating(@PathVariable Long id, @RequestBody Map<String, Object> ratingData) {
         try {
-            Integer newRating = ratingData.get("rating");
-            if (newRating == null) {
-                return ResponseEntity.badRequest().body("Rating is required");
+            String userLogin = (String) ratingData.get("userLogin");
+            Boolean isPositive = (Boolean) ratingData.get("isPositive");
+            
+            if (userLogin == null || userLogin.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("User login is required");
+            }
+            if (isPositive == null) {
+                return ResponseEntity.badRequest().body("Rating value is required");
             }
 
             Publication post = publicationService.getPostById(id)
                     .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
             
-            post.setRating(newRating);
+            // Обновляем рейтинг поста
+            int currentRating = post.getRating();
+            post.setRating(currentRating + (isPositive ? 1 : -1));
+            
+            // Обновляем информацию о лайках
+            String currentLikes = post.getLikes();
+            List<String> likes = new ArrayList<>();
+            if (currentLikes != null && !currentLikes.isEmpty()) {
+                try {
+                    likes = objectMapper.readValue(currentLikes, new TypeReference<List<String>>() {});
+                } catch (Exception e) {
+                    logger.warn("Failed to parse likes JSON, initializing empty list. Error: {}", e.getMessage());
+                }
+            }
+            
+            // Удаляем предыдущую реакцию пользователя, если она есть
+            likes = likes.stream()
+                    .filter(like -> !like.startsWith(userLogin + ":"))
+                    .collect(Collectors.toList());
+            
+            // Добавляем новую реакцию
+            likes.add(userLogin + ":" + isPositive);
+            
+            // Сохраняем обновленный список лайков
+            post.setLikes(objectMapper.writeValueAsString(likes));
+            
             Publication updatedPost = publicationService.updatePost(id, post);
             return ResponseEntity.ok(updatedPost);
         } catch (Exception e) {
