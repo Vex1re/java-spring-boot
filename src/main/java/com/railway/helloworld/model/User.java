@@ -15,6 +15,7 @@ public class User {
     private String email;
     private String city;
     private String password;
+    private String avatar;
 
     public User() {}
 
@@ -79,6 +80,14 @@ public class User {
         this.password = password;
     }
 
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -89,6 +98,7 @@ public class User {
                 ", email=" + email + '\'' +
                 ", city=" + city + '\'' +
                 ", password=" + password + '\'' +
+                ", avatar=" + avatar + '\'' +
                 '}';
     }
 
