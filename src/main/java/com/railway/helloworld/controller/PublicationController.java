@@ -181,8 +181,8 @@ public class PublicationController {
         }
     }
 
-    @DeleteMapping(value = {"/{id}/like", "/{id}/like/"})
-    public ResponseEntity<?> removeLike(@PathVariable Long id, @RequestBody Map<String, String> userData) {
+    @PostMapping(value = {"/{id}/like/remove", "/{id}/like/remove/"})
+    public ResponseEntity<?> removeLikePost(@PathVariable Long id, @RequestBody Map<String, String> userData) {
         try {
             String userLogin = userData.get("userLogin");
             if (userLogin == null || userLogin.trim().isEmpty()) {
