@@ -25,6 +25,7 @@ public class FileStorageService {
     public FileStorageService(FileStorageConfig fileStorageConfig) {
         this.fileStorageLocation = Paths.get(fileStorageConfig.getUploadDir())
                 .toAbsolutePath().normalize();
+        logger.info("File storage location initialized at: {}", this.fileStorageLocation);
     }
 
     @PostConstruct
@@ -64,9 +65,10 @@ public class FileStorageService {
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            logger.info("File stored successfully: {}", fileName);
+            logger.info("File stored successfully at: {}", targetLocation);
             return "/images/" + fileName;
         } catch (IOException ex) {
+            logger.error("Failed to store file: ", ex);
             throw new RuntimeException("Could not store file. Please try again!", ex);
         }
     }

@@ -2,24 +2,27 @@ package com.railway.helloworld.controller;
 
 import com.railway.helloworld.model.User;
 import com.railway.helloworld.service.UserService;
+import com.railway.helloworld.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable long id) {
@@ -60,15 +63,10 @@ public class UserController {
             if (file.isEmpty()) {
                 return ResponseEntity.badRequest().body("Файл не выбран");
             }
-            // Генерируем уникальное имя файла
-            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path uploadPath = Paths.get("uploads/avatars");
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Path filePath = uploadPath.resolve(filename);
-            Files.copy(file.getInputStream(), filePath);
-            String fileUrl = "/uploads/avatars/" + filename;
+            
+            // Сохраняем файл через FileStorageService
+            String fileUrl = fileStorageService.storeFile(file);
+            logger.info("Avatar uploaded successfully: {}", fileUrl);
 
             // Обновляем пользователя
             User user = userService.getUserById(id).orElseThrow(() -> new RuntimeException("User not found"));
@@ -77,8 +75,8 @@ public class UserController {
 
             return ResponseEntity.ok().body(fileUrl);
         } catch (Exception e) {
+            logger.error("Error uploading avatar: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка загрузки: " + e.getMessage());
         }
     }
-
 }
