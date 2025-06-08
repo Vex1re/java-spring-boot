@@ -59,24 +59,28 @@ public class UserController {
 
     @PostMapping("/{id}/avatar")
     public ResponseEntity<?> uploadAvatar(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("File is empty");
+        }
         try {
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("Файл не выбран");
+            // Генерируем уникальное имя файла
+            String fileName = java.util.UUID.randomUUID() + "_" + file.getOriginalFilename();
+            java.nio.file.Path uploadPath = java.nio.file.Paths.get("uploads/images/");
+            if (!java.nio.file.Files.exists(uploadPath)) {
+                java.nio.file.Files.createDirectories(uploadPath);
             }
-            
-            // Сохраняем файл через FileStorageService
-            String fileUrl = fileStorageService.storeFile(file);
-            logger.info("Avatar uploaded successfully: {}", fileUrl);
+            java.nio.file.Path filePath = uploadPath.resolve(fileName);
+            java.nio.file.Files.copy(file.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
-            // Обновляем пользователя
+            // Сохраняем ссылку в базу
             User user = userService.getUserById(id).orElseThrow(() -> new RuntimeException("User not found"));
-            user.setAvatar(fileUrl);
+            user.setAvatar("/uploads/images/" + fileName);
             userService.updateUser(id, user);
 
-            return ResponseEntity.ok().body(fileUrl);
+            return ResponseEntity.ok("/uploads/images/" + fileName);
         } catch (Exception e) {
             logger.error("Error uploading avatar: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка загрузки: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload avatar");
         }
     }
 }
