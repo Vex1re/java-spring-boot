@@ -252,4 +252,39 @@ public class PublicationController {
             return ResponseEntity.internalServerError().body("Error removing like: " + e.getMessage());
         }
     }
+
+    @GetMapping("/user/{userLogin}/reactions")
+    public ResponseEntity<?> getUserReactions(@PathVariable String userLogin) {
+        try {
+            if (userLogin == null || userLogin.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("User login is required");
+            }
+
+            logger.info("Getting reactions for user {}", userLogin);
+            List<Publication> posts = publicationService.getAllPosts();
+            Map<Long, Boolean> reactions = new HashMap<>();
+            
+            for (Publication post : posts) {
+                String likes = post.getLikes();
+                if (likes != null && !likes.isEmpty()) {
+                    try {
+                        List<String> likesList = objectMapper.readValue(likes, new TypeReference<List<String>>() {});
+                        for (String reaction : likesList) {
+                            if (reaction.startsWith(userLogin + ":")) {
+                                reactions.put(post.getId(), reaction.endsWith(":true"));
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Failed to parse likes JSON for post {}. Error: {}", post.getId(), e.getMessage());
+                    }
+                }
+            }
+            
+            return ResponseEntity.ok(reactions);
+        } catch (Exception e) {
+            logger.error("Error getting user reactions: ", e);
+            return ResponseEntity.internalServerError().body("Error getting user reactions: " + e.getMessage());
+        }
+    }
 }
